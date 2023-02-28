@@ -153,14 +153,20 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         result(FlutterError(code: "AUTHORIZATION_ERROR", message: "authorization error", details: error.localizedDescription))
       }
     }
-    
+
+    let sharedId = data["sharedId"] as? String ?? UUID().uuidString
+    let teamAScore = data["teamAScore"] as? String ?? ""
+    let teamBScore = data["teamBScore"] as? String ?? ""
+    let matchClock = data["matchClock"] as? String ?? ""
+    let matchPeriod = data["matchPeriod"] as? String ?? ""
+
     for item in data {
-      sharedDefault!.set(item.value, forKey: item.key)
+      sharedDefault!.set(item.value, forKey: sharedId + item.key)
     }
-    
-    let liveDeliveryAttributes = LiveActivitiesAppAttributes()
-    let initialContentState = LiveActivitiesAppAttributes.LiveDeliveryData(appGroupId: appGroupId!)
-    
+
+    let liveDeliveryAttributes = LiveActivitiesAppAttributes(sharedId: sharedId)
+    let initialContentState = LiveActivitiesAppAttributes.LiveDeliveryData(teamAScore: teamAScore, teamBScore: teamBScore, matchClock: matchClock, matchPeriod: matchPeriod)
+
     do {
       let deliveryActivity = try Activity<LiveActivitiesAppAttributes>.request(
         attributes: liveDeliveryAttributes,
@@ -175,7 +181,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       result(FlutterError(code: "LIVE_ACTIVITY_ERROR", message: "can't launch live activity", details: error.localizedDescription))
     }
   }
-  
+
   @available(iOS 16.1, *)
   func updateActivity(activityId: String, data: [String: Any], result: @escaping FlutterResult) {
     Task {
@@ -184,8 +190,8 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
           for item in data {
             sharedDefault!.set(item.value, forKey: item.key)
           }
-          
-          let updatedStatus = LiveActivitiesAppAttributes.LiveDeliveryData(appGroupId: self.appGroupId!)
+
+          let updatedStatus = LiveActivitiesAppAttributes.LiveDeliveryData()
           await activity.update(using: updatedStatus)
           break;
         }
@@ -193,7 +199,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       result(nil)
     }
   }
-  
+
   @available(iOS 16.1, *)
   func getActivityState(activityId: String, result: @escaping FlutterResult) {
     Task {
@@ -213,7 +219,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       }
     }
   }
-  
+
   @available(iOS 16.1, *)
   func getPushToken(activityId: String, result: @escaping FlutterResult) {
     Task {
@@ -227,7 +233,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       }
     }
   }
-  
+
   @available(iOS 16.1, *)
   func endActivity(activityId: String, result: @escaping FlutterResult) {
     appLifecycleLifeActiviyIds.removeAll { $0 == activityId }
@@ -236,7 +242,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       result(nil)
     }
   }
-  
+
   @available(iOS 16.1, *)
   func endAllActivities(result: @escaping FlutterResult) {
     Task {
@@ -247,17 +253,17 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       result(nil)
     }
   }
-  
+
   @available(iOS 16.1, *)
   func getAllActivitiesIds(result: @escaping FlutterResult) {
     var activitiesId: [String] = []
     for activity in Activity<LiveActivitiesAppAttributes>.activities {
       activitiesId.append(activity.id)
     }
-    
+
     result(activitiesId)
   }
-  
+
   @available(iOS 16.1, *)
   private func endActivitiesWithId(activityIds: [String]) async {
     for activity in Activity<LiveActivitiesAppAttributes>.activities {
@@ -266,14 +272,14 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       }
     }
   }
-  
+
   public func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
     let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-    
+
     if components?.scheme == nil { return false }
-    
+
     var queryResult: Dictionary<String, Any> = Dictionary()
-    
+
     queryResult["queryItems"] = components?.queryItems?.map({ (item) -> Dictionary<String, String> in
       var queryItemResult: Dictionary<String, String> = Dictionary()
       queryItemResult["name"] = item.name
@@ -284,11 +290,11 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     queryResult["host"] = components?.host
     queryResult["path"] = components?.path
     queryResult["url"] = components?.url?.absoluteString
-    
+
     urlSchemeSink?.self(queryResult)
     return true
   }
-  
+
   public func applicationWillTerminate(_ application: UIApplication) {
     if #available(iOS 16.1, *) {
       Task {
@@ -296,14 +302,18 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       }
     }
   }
-  
+
   struct LiveActivitiesAppAttributes: ActivityAttributes, Identifiable {
     public typealias LiveDeliveryData = ContentState
-    
+
     public struct ContentState: Codable, Hashable {
-      var appGroupId: String
+        var teamAScore: String?
+        var teamBScore: String?
+        var matchClock: String?
+        var matchPeriod: String?
     }
-    
+
+    var sharedId: String
     var id = UUID()
   }
   
