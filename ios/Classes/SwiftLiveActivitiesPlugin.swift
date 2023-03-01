@@ -159,12 +159,13 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     let teamBScore = data["teamBScore"] as? String ?? ""
     let matchClock = data["matchClock"] as? String ?? ""
     let matchPeriod = data["matchPeriod"] as? String ?? ""
+    let campus = data["campus"] as? String ?? "IUB"
 
     for item in data {
       sharedDefault!.set(item.value, forKey: sharedId + item.key)
     }
 
-    let liveDeliveryAttributes = LiveActivitiesAppAttributes(sharedId: sharedId)
+    let liveDeliveryAttributes = LiveActivitiesAppAttributes(campus: campus, sharedId: sharedId)
     let initialContentState = LiveActivitiesAppAttributes.LiveDeliveryData(teamAScore: teamAScore, teamBScore: teamBScore, matchClock: matchClock, matchPeriod: matchPeriod)
 
     do {
@@ -314,6 +315,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     }
 
     var sharedId: String
+    var campus: String
     var id = UUID()
   }
   
