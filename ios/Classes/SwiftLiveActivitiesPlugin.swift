@@ -165,7 +165,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
       sharedDefault!.set(item.value, forKey: sharedId + item.key)
     }
 
-    let liveDeliveryAttributes = LiveActivitiesAppAttributes(campus: campus, sharedId: sharedId)
+    let liveDeliveryAttributes = LiveActivitiesAppAttributes(sharedId: sharedId, campus: campus)
     let initialContentState = LiveActivitiesAppAttributes.LiveDeliveryData(teamAScore: teamAScore, teamBScore: teamBScore, matchClock: matchClock, matchPeriod: matchPeriod)
 
     do {
