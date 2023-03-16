@@ -159,6 +159,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     let teamBScore = data["teamBScore"] as? String ?? ""
     let matchClock = data["matchClock"] as? String ?? ""
     let matchPeriod = data["matchPeriod"] as? String ?? ""
+    let matchPossession = data["matchPossession"] as? String ?? ""
     let campus = data["campus"] as? String ?? "IUB"
 
     for item in data {
@@ -166,7 +167,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
     }
 
     let liveDeliveryAttributes = LiveActivitiesAppAttributes(sharedId: sharedId, campus: campus)
-    let initialContentState = LiveActivitiesAppAttributes.LiveDeliveryData(teamAScore: teamAScore, teamBScore: teamBScore, matchClock: matchClock, matchPeriod: matchPeriod)
+    let initialContentState = LiveActivitiesAppAttributes.LiveDeliveryData(teamAScore: teamAScore, teamBScore: teamBScore, matchClock: matchClock, matchPeriod: matchPeriod, matchPossession: matchPossession)
 
     do {
       let deliveryActivity = try Activity<LiveActivitiesAppAttributes>.request(
@@ -312,6 +313,7 @@ public class SwiftLiveActivitiesPlugin: NSObject, FlutterPlugin, FlutterStreamHa
         var teamBScore: String?
         var matchClock: String?
         var matchPeriod: String?
+        var matchPossession: String?
     }
 
     var sharedId: String
